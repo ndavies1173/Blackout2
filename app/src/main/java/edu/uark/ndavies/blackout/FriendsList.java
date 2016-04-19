@@ -46,7 +46,7 @@ public class FriendsList extends AppCompatActivity {
     TextView textView;
 
     private static final String ADD_URL = "http://www.kanosthefallen.com/php_scripts/addfriends.php";//URL for connection to database
-    private static final String GET_URL = "http://www.kanosthefallen.com/php_scripts/getfriends.php";
+    private static final String GET_URL = "http://www.kanosthefallen.com/php_scripts/getfriendsacc.php";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -140,11 +140,12 @@ public class FriendsList extends AppCompatActivity {
                  new Response.Listener<JSONObject>(){
 
                      @Override
-                     public void onResponse(JSONObject response) {
+                     public void onResponse(JSONObject response) {Toast.makeText(getApplicationContext(), "Loop " , Toast.LENGTH_SHORT).show();
 
                          try {
-                             JSONArray jsonArray = response.getJSONArray("Friendsid");
+                             JSONArray jsonArray = response.getJSONArray("friendslist");
                              for(int i = 0; i < jsonArray.length(); i++){
+
                                  JSONObject friend = jsonArray.getJSONObject(i);
                                  friends.add(friend.getString("Friend"));
                                  String one = friend.getString("Friend");
@@ -178,5 +179,5 @@ public class FriendsList extends AppCompatActivity {
          }};
 
         requestQueue.add(listRequest);
-    }
+    }// End GetList()
 }

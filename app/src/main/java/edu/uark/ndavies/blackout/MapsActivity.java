@@ -26,6 +26,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 
@@ -36,11 +37,13 @@ public class MapsActivity extends FragmentActivity implements GoogleApiClient.Co
     private float lastX;
     private EditText user;
     private GoogleApiClient mGoogleApiClient;
+    Marker marker;
     Location mLastLocation, currentLocation;
     String mLatitudeText, mLongitudeText;
     int MY_PERMISSIONS_REQUEST_FINE_LOCATION, MY_PERMISSIONS_REQUEST_COARSE_LOCATION;
     LocationRequest mLocationRequest;
     boolean mRequestingLocationUpdates = true;
+    boolean start = true;
     // Location location;
     // LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
     //Intent intent = getIntent();
@@ -86,7 +89,15 @@ public class MapsActivity extends FragmentActivity implements GoogleApiClient.Co
                         locationManager.requestLocationUpdates(provider, 120000, 10000, locationListener);
                     }
                 }*/
-                startLocationUpdates();
+                if(start){
+                    startLocationUpdates();
+                    tracking.setText("Stop Tracking");
+                 }else{
+                    stopLocationUpdates();
+                    tracking.setText("Start Tracking");
+                    marker.remove();
+                    start = true;
+                }
             }
         });
 
@@ -116,8 +127,15 @@ public class MapsActivity extends FragmentActivity implements GoogleApiClient.Co
 
     private void UpdateUI(){
         LatLng current = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
-        mMap.addMarker(new MarkerOptions().position(current).title("Current Location"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(current, 15));
+
+        if(start) {
+            marker = mMap.addMarker(new MarkerOptions().position(current).title("Current Location"));
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(current, 15));
+            start = false;
+        }else{
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(current));
+            marker.setPosition(current);
+        }
     }
 
     /*@Override

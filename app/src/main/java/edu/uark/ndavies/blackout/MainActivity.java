@@ -61,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
 
         //Button to get to MapActivity for testing
         //HIDE OR DELETE IN FINAL BUILD
+        //**************************************************************************************************************************
         final Button Map = (Button) findViewById(R.id.map);
         Map.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -68,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(getApplicationContext(), MapsActivity.class));
             }
         });
+        //**************************************************************************************************************************
         //HIDE OR DELETE IN FINAL BUILD
 
         //Creating a ViewFlipper to show multiple views in same activity
