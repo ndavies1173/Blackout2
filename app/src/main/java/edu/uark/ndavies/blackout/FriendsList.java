@@ -2,8 +2,10 @@ package edu.uark.ndavies.blackout;
 
 import android.app.Application;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -27,6 +29,17 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,14 +49,19 @@ public class FriendsList extends AppCompatActivity {
     private RequestQueue requestQueue;
     private EditText email;
     private StringRequest request;
-    private JsonObjectRequest listRequest;
+    private JsonArrayRequest listRequest;
     /*Intent intent = getIntent();
     private String USER = intent.getStringExtra("EXTRA_SESSION_ID");*/
     private String USER;
+    String JSON_STRING, friendString;
     JSONArray people = null;
     List friends;
     String[] friendArray;
     TextView textView;
+    JSONObject jsonObject;
+    JSONArray jsonArray;
+    FriendsAdapter friendsAdapter;
+    ListView listView;
 
     private static final String ADD_URL = "http://www.kanosthefallen.com/php_scripts/addfriends.php";//URL for connection to database
     private static final String GET_URL = "http://www.kanosthefallen.com/php_scripts/getfriendsacc.php";
@@ -53,19 +71,24 @@ public class FriendsList extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_friends_list);
 
-        USER = ((MyApplication) this.getApplication()).getSomeVariable();
+        USER = ((MyApplication) this.getApplication()).getUser();
 
 
         requestQueue = Volley.newRequestQueue(this);
         email = (EditText) findViewById(R.id.email);
         textView = (TextView) findViewById(R.id.textView2);
+        friendsAdapter = new FriendsAdapter(this, R.layout.row_layout);
+        listView = (ListView)findViewById(R.id.listView);
+        listView.setAdapter(friendsAdapter);
 
-        final Button load = (Button) findViewById(R.id.load);
+        new BackgroundTask().execute();
+
+        /*final Button load = (Button) findViewById(R.id.load);
         load.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 getList();
             }
-        });
+        });*/
 
         final Button enter = (Button) findViewById(R.id.enter);
         enter.setOnClickListener(new View.OnClickListener() {
@@ -136,14 +159,17 @@ public class FriendsList extends AppCompatActivity {
 
         }};*/
 
-         listRequest = new JsonObjectRequest(Request.Method.POST, GET_URL,
-                 new Response.Listener<JSONObject>(){
 
+        /*Log.e("Test", "In getList");
+         listRequest = new JsonArrayRequest(Request.Method.POST, GET_URL,
+                 new Response.Listener<JSONArray>(){
                      @Override
-                     public void onResponse(JSONObject response) {Toast.makeText(getApplicationContext(), "Loop " , Toast.LENGTH_SHORT).show();
+                     public void onResponse(JSONArray response) {
 
+                         Log.e("Test", "In response");
                          try {
-                             JSONArray jsonArray = response.getJSONArray("friendslist");
+                             JSONArray jsonArray = new JSONArray(response);
+                             Toast.makeText(getApplicationContext(), "Loop " , Toast.LENGTH_SHORT).show();
                              for(int i = 0; i < jsonArray.length(); i++){
 
                                  JSONObject friend = jsonArray.getJSONObject(i);
@@ -178,6 +204,87 @@ public class FriendsList extends AppCompatActivity {
 
          }};
 
-        requestQueue.add(listRequest);
+        requestQueue.add(listRequest);*/
+
+
+
+        try {
+            jsonObject = new JSONObject(friendString);
+            jsonArray = jsonObject.getJSONArray("friendslist");
+            int count = 0;
+            String name;
+            while(count < jsonObject.length()){
+                JSONObject JO = jsonArray.getJSONObject(count);
+                name = JO.getString("Friend");
+                Friends friends = new Friends(name);
+                friendsAdapter.add(friends);
+
+                count++;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
     }// End GetList()
+
+    class BackgroundTask extends AsyncTask<Void, Void, String>
+    {
+        @Override
+        protected String doInBackground(Void... voids) {
+            try {
+                URL url = new URL(GET_URL);
+                HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+                httpURLConnection.setReadTimeout(10000);
+                httpURLConnection.setConnectTimeout(15000);
+                httpURLConnection.setRequestMethod("POST");
+                httpURLConnection.setRequestProperty("email", USER);
+                httpURLConnection.setDoInput(true);
+                httpURLConnection.setDoOutput(true);
+
+                DataOutputStream dataOutputStream = new DataOutputStream(httpURLConnection.getOutputStream());
+                dataOutputStream.writeBytes("email=" + USER);
+                dataOutputStream.flush();
+                dataOutputStream.close();
+
+                InputStream inputStream = httpURLConnection.getInputStream();
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+                StringBuilder stringBuilder = new StringBuilder();
+
+                while((JSON_STRING = bufferedReader.readLine()) != null){
+                    stringBuilder.append(JSON_STRING + "/n");
+                    //Log.e("Test", JSON_STRING);
+                }
+
+                bufferedReader.close();
+                inputStream.close();
+                httpURLConnection.disconnect();
+                return stringBuilder.toString().trim();
+
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e){
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPreExecute(){
+            super.onPreExecute();
+        }
+
+
+        protected void onProgressUpdate(Void... voids){
+            super.onProgressUpdate();
+        }
+
+        @Override
+        protected void onPostExecute(String result){
+           // textView.setText(result);
+            friendString = result;
+            getList();
+        }
+    }
 }

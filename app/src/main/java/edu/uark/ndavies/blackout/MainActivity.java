@@ -222,7 +222,8 @@ public class MainActivity extends AppCompatActivity {
     }//End OnCreate
 
     private void saveUser(String name){
-        ((MyApplication) this.getApplication()).setSomeVariable(name);
+        ((MyApplication) this.getApplication()).setUser(name);
+        ((MyApplication) this.getApplication()).setStart(true);
     }
 
     //Returns to default view on back pressed. If already on default view exits activity.

@@ -43,7 +43,8 @@ public class MapsActivity extends FragmentActivity implements GoogleApiClient.Co
     int MY_PERMISSIONS_REQUEST_FINE_LOCATION, MY_PERMISSIONS_REQUEST_COARSE_LOCATION;
     LocationRequest mLocationRequest;
     boolean mRequestingLocationUpdates = true;
-    boolean start = true;
+    boolean start;
+    Button tracking;
     // Location location;
     // LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
     //Intent intent = getIntent();
@@ -59,7 +60,8 @@ public class MapsActivity extends FragmentActivity implements GoogleApiClient.Co
         mapFragment.getMapAsync(this);
 
         viewFlipper = (ViewFlipper) findViewById(R.id.viewFlipper);
-        user = (EditText) findViewById(R.id.user_email);
+        start = ((MyApplication) this.getApplication()).getStart();
+        //user = (EditText) findViewById(R.id.user_email);
 
         // Create an instance of GoogleAPIClient.
         if (mGoogleApiClient == null) {
@@ -191,8 +193,11 @@ public class MapsActivity extends FragmentActivity implements GoogleApiClient.Co
 
     @Override
     protected void onPause() {
+        //((MyApplication) this.getApplication()).setStart(start);
         super.onPause();
-        stopLocationUpdates();
+        //if(start){
+             stopLocationUpdates();
+       // }
     }
 
     protected void stopLocationUpdates() {
@@ -201,10 +206,16 @@ public class MapsActivity extends FragmentActivity implements GoogleApiClient.Co
 
     @Override
     public void onResume() {
+        //start = ((MyApplication) this.getApplication()).getStart();
         super.onResume();
         if (mGoogleApiClient.isConnected() && !mRequestingLocationUpdates) {
             startLocationUpdates();
         }
+        /*if(!start){
+            mGoogleApiClient.connect();
+            startLocationUpdates();
+            tracking.setText("Stop Tracking");
+        }*/
     }
 
     protected void createLocationRequest() {

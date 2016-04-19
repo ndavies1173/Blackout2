@@ -5,13 +5,14 @@ import android.app.Application;
 
 public class MyApplication extends Application {
 
-    private String someVariable;
+    private String User;
+    private boolean start;
 
-    public String getSomeVariable() {
-        return someVariable;
-    }
+    public String getUser() {return User;}
+    public boolean getStart(){return start;}
 
-    public void setSomeVariable(String someVariable) {
-        this.someVariable = someVariable;
+    public void setUser(String someVariable) {
+        this.User = someVariable;
     }
+    public void setStart(boolean start){this.start = start;}
 }
